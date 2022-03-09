@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Fibonacci" />
+        <module name="Tic-tac-toe" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Fibonacci" target="14" />
+      <module name="Tic-tac-toe" target="14" />
     </bytecodeTargetLevel>
   </component>
 </project>

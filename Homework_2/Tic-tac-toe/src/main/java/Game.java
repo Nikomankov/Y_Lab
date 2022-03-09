@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Game {
@@ -69,32 +71,40 @@ public class Game {
     }
 
     public void startGame(){
-        Scanner scanner = new Scanner(System.in);
-        int counter = 1;
-        boolean win = false;
-        String move;
-        int line;
-        int column;
-        while(counter < 10 & !win){
-            printField();
+        try {
+            FileWriter fileWriter = new FileWriter("Raiting.txt",true);
 
-            System.out.print( "player " + (counter%2 == 1 ? player1 : player2) +
-                    "\nEnter your move: line = ");
-            line = scanner.nextInt() - 1;
-            System.out.print("column = ");
-            column = scanner.nextInt() - 1;
-            if(!checkEnterMove(line,column)){
-                continue;
+            Scanner scanner = new Scanner(System.in);
+            int counter = 1;
+            boolean win = false;
+            String move;
+            int line;
+            int column;
+            while(counter < 10 & !win) {
+                printField();
+
+                System.out.print("player " + (counter % 2 == 1 ? player1 : player2) +
+                        "\nEnter your move: line = ");
+                line = scanner.nextInt() - 1;
+                System.out.print("column = ");
+                column = scanner.nextInt() - 1;
+                if (!checkEnterMove(line, column)) {
+                    continue;
+                }
+                switch (counter % 2) {
+                    case 1 -> step(1, line, column);
+                    case 0 -> step(0, line, column);
+                }
+                win = lineСheck(counter % 2, line, column);
+                if (win) {
+                    System.out.println("Congratulation! " + (counter % 2 == 1 ? player1 : player2) + " WIN!");
+                    fileWriter.append((counter % 2 == 1 ? player1 : player2) + "\n");
+                    fileWriter.close();
+                }
+                counter++;
             }
-            switch (counter % 2) {
-                case 1 -> step(1, line, column);
-                case 0 -> step(0, line, column);
-            }
-            win = lineСheck(counter%2,line,column);
-            if(win){
-                System.out.println("Congratulation! " + (counter%2 == 1 ? player1 : player2) + " WIN!");
-            }
-            counter++;
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 

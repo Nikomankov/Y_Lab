@@ -14,5 +14,8 @@ public class Main {
 
         Game game1 = new Game(player1,player2);
         game1.startGame();
+
+        Game game = new Game();
+        game.readFromXML();
     }
 }

@@ -1,3 +1,10 @@
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,30 +18,67 @@ public class Game {
             "\n3. It is forbidden to put your symbol on top of the opponent's symbol." +
             "\n4. The winner is the one who first builds a horizontal, vertical or " +
             "\n   diagonal line of 3 of his symbols.";
-    private final String player1;
-    private final String player2;
+    private String player1;
+    private String player2;
     private char[][] gameField;
+
     private enum WinStatus {FIRST, SECOND, DRAW}
     private File rating;
+
+    private File xml;
+    private Document docToWrite;
+    private Document docToRead;
+
+    public Game(){
+        this.gameField = new char[3][3];
+        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder;
+        try {
+            builder = factory.newDocumentBuilder();
+            this.docToRead = builder.parse(xml);
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            e.printStackTrace();
+        }
+
+        createField();
+    }
 
     public Game(String player1, String player2){
         this.player1 = player1;
         this.player2 = player2;
         this.gameField = new char[3][3];
         this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
+        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
+
+        //Rating
         try {
             rating.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        //XML DOM
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder;
+        try {
+            builder = factory.newDocumentBuilder();
+            this.docToWrite = builder.newDocument();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        createField();
+        System.out.println(GAME_RULES);
+    }
+
+    public void createField(){
         for(int i = 0; i < 3; i++){
             for(int j = 0; j < 3; j++){
                 this.gameField[i][j] = '-';
             }
         }
-        System.out.println(GAME_RULES);
     }
-
     public void printField(){
         System.out.println("    1   2   3");
         for(int i = 0; i < 3; i++){
@@ -71,7 +115,7 @@ public class Game {
     private boolean step(int player, int line, int column){
         switch (player) {
             case 1 -> gameField[line][column] = 'X';
-            case 0 -> gameField[line][column] = '0';
+            case 2 -> gameField[line][column] = '0';
         }
         return true;
     }
@@ -82,35 +126,73 @@ public class Game {
         int line;
         int column;
         boolean win = false;
+        Element gameplay = docToWrite.createElement("Gameplay");
+        docToWrite.appendChild(gameplay);
+        gameplay.appendChild(playerToXml(1));
+        gameplay.appendChild(playerToXml(2));
+        Element game = docToWrite.createElement("Game");
+        gameplay.appendChild(game);
         while(counter < 10 & !win) {
+            int playerIndex = counter % 2 == 1 ? 1 : 2;
             printField();
 
             //player moves
-            System.out.print("player " + (counter % 2 == 1 ? player1 : player2) +
+            System.out.print("player " + (playerIndex == 1 ? player1 : player2) +
                     "\nEnter your move: line = ");
             line = scanner.nextInt() - 1;
             System.out.print("column = ");
             column = scanner.nextInt() - 1;
+
             if (!checkEnterMove(line, column)) {
                 continue;
             }
-            switch (counter % 2) {
-                case 1 -> step(1, line, column);
-                case 0 -> step(0, line, column);
+
+            switch (playerIndex) {
+                case 1 -> {
+                    step(1, line, column);
+                    game.appendChild(stepToXML(counter, 1, line + 1, column + 1));
+                }
+                case 2 -> {
+                    step(2, line, column);
+                    game.appendChild(stepToXML(counter, 2, line + 1, column + 1));
+                }
             }
 
             //winner check
-            win = lineСheck(counter % 2, line, column);
+            win = lineСheck(playerIndex, line, column);
             if (win) {
-                System.out.println("Congratulation! " + (counter % 2 == 1 ? player1 : player2) + " WIN!");
-                ratingEntry(counter % 2 == 1 ? WinStatus.FIRST : WinStatus.SECOND);
+                switch (playerIndex) {
+                    case 1 -> {
+                        System.out.println("Congratulation! " + player1 + " WIN!");
+                        ratingEntry(WinStatus.FIRST);
+                        gameplay.appendChild(winStatusToXML(WinStatus.FIRST));
+                    }
+                    case 2 -> {
+                        System.out.println("Congratulation! " + player2 + " WIN!");
+                        ratingEntry(WinStatus.SECOND);
+                        gameplay.appendChild(winStatusToXML(WinStatus.SECOND));
+                    }
+                }
             }
             counter++;
             if(counter == 10 & !win){
                 System.out.println("Draw!");
                 ratingEntry(WinStatus.DRAW);
+                gameplay.appendChild(winStatusToXML(WinStatus.DRAW));
             }
         }
+
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            DOMSource source = new DOMSource(docToWrite);
+            StreamResult file = new StreamResult(xml);
+            transformer.transform(source, file);
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void ratingEntry(WinStatus winStatus){
@@ -145,6 +227,67 @@ public class Game {
             verticalCounter += gameField[i][column] == c ? 1 : 0;
         }
         return diagCounter1 == 3 | diagCounter2 == 3 | horizontCounter == 3 | verticalCounter == 3;
+    }
+
+    //----------------------------------------------
+    //XML
+    private Element playerToXml(int playerIndex){
+        Element player = docToWrite.createElement("Player");
+        player.setAttribute("id",String.valueOf(playerIndex));
+        player.setAttribute("name", playerIndex == 1 ? player1 : player2);
+        player.setAttribute("symbol", playerIndex == 1 ? "X" : "0");
+        return player;
+    }
+    private Element stepToXML(int counter, int player, int line, int column){
+        Element step = docToWrite.createElement("step");
+        step.setAttribute("num", String.valueOf(counter));
+        step.setAttribute("playerId", String.valueOf(player));
+        step.setTextContent("line = " + line + ", column = " + column);
+        return step;
+    }
+    private Element winStatusToXML(WinStatus winStatus){
+        Element gameResult = docToWrite.createElement("GameResult");
+        switch (winStatus){
+            case DRAW -> {
+                gameResult.setTextContent("Draw!");
+                gameResult.appendChild(playerToXml(1));
+                gameResult.appendChild(playerToXml(2));
+            }
+            case FIRST -> gameResult.appendChild(playerToXml(1));
+            case SECOND -> gameResult.appendChild(playerToXml(2));
+        }
+        return gameResult;
+    }
+
+
+    public void readFromXML(){
+        int line;
+        int column;
+        docToRead.getDocumentElement().normalize();
+        NodeList stepNodes = docToRead.getElementsByTagName("step");
+        for(int i = 0; i < stepNodes.getLength(); i++){
+            String step = stepNodes.item(i).getTextContent();
+            line = Character.getNumericValue(step.charAt(7)) - 1;
+            column = Character.getNumericValue(step.charAt(19)) - 1;
+            step(i%2 == 1 ? 1 : 2, line, column);
+            printField();
+            System.out.println();
+        }
+        Node gameResult = docToRead.getElementsByTagName("GameResult").item(0);
+        boolean draw = gameResult.getTextContent().trim().equals("Draw!");
+        if(draw) {
+            System.out.println("Draw!");
+        }
+        NodeList winners = gameResult.getChildNodes();
+        for(int i = 0; i < winners.getLength(); i++){
+            NamedNodeMap player;
+            if(winners.item(i).getNodeName().equals("Player")){
+                player = winners.item(i).getAttributes();
+                System.out.println("Player " + player.getNamedItem("id").getNodeValue() + " -> " +
+                        player.getNamedItem("name").getNodeValue() + (draw ? "" : " winner") +" as '" +
+                        player.getNamedItem("symbol").getNodeValue() + "'!");
+            }
+        }
     }
 
 }

@@ -34,12 +34,21 @@ public class Game {
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
-        try {
-            builder = factory.newDocumentBuilder();
-            this.docToRead = builder.parse(xml);
-        } catch (ParserConfigurationException | IOException | SAXException e) {
+        try{
+            if(!xml.exists()){
+                throw new XMLMissingException();
+            } else {
+                try {
+                    builder = factory.newDocumentBuilder();
+                    this.docToRead = builder.parse(xml);
+                } catch (ParserConfigurationException | IOException | SAXException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (XMLMissingException e){
             e.printStackTrace();
         }
+
 
         createField();
     }
@@ -261,32 +270,40 @@ public class Game {
 
 
     public void readFromXML(){
-        int line;
-        int column;
-        docToRead.getDocumentElement().normalize();
-        NodeList stepNodes = docToRead.getElementsByTagName("step");
-        for(int i = 0; i < stepNodes.getLength(); i++){
-            String step = stepNodes.item(i).getTextContent();
-            line = Character.getNumericValue(step.charAt(7)) - 1;
-            column = Character.getNumericValue(step.charAt(19)) - 1;
-            step(i%2 == 1 ? 1 : 2, line, column);
-            printField();
-            System.out.println();
-        }
-        Node gameResult = docToRead.getElementsByTagName("GameResult").item(0);
-        boolean draw = gameResult.getTextContent().trim().equals("Draw!");
-        if(draw) {
-            System.out.println("Draw!");
-        }
-        NodeList winners = gameResult.getChildNodes();
-        for(int i = 0; i < winners.getLength(); i++){
-            NamedNodeMap player;
-            if(winners.item(i).getNodeName().equals("Player")){
-                player = winners.item(i).getAttributes();
-                System.out.println("Player " + player.getNamedItem("id").getNodeValue() + " -> " +
-                        player.getNamedItem("name").getNodeValue() + (draw ? "" : " winner") +" as '" +
-                        player.getNamedItem("symbol").getNodeValue() + "'!");
+        try{
+            if(!xml.exists()){
+                throw new XMLMissingException();
+            } else {
+                int line;
+                int column;
+                docToRead.getDocumentElement().normalize();
+                NodeList stepNodes = docToRead.getElementsByTagName("step");
+                for(int i = 0; i < stepNodes.getLength(); i++){
+                    String step = stepNodes.item(i).getTextContent();
+                    line = Character.getNumericValue(step.charAt(7)) - 1;
+                    column = Character.getNumericValue(step.charAt(19)) - 1;
+                    step(i%2 == 1 ? 1 : 2, line, column);
+                    printField();
+                    System.out.println();
+                }
+                Node gameResult = docToRead.getElementsByTagName("GameResult").item(0);
+                boolean draw = gameResult.getTextContent().trim().equals("Draw!");
+                if(draw) {
+                    System.out.println("Draw!");
+                }
+                NodeList winners = gameResult.getChildNodes();
+                for(int i = 0; i < winners.getLength(); i++){
+                    NamedNodeMap player;
+                    if(winners.item(i).getNodeName().equals("Player")){
+                        player = winners.item(i).getAttributes();
+                        System.out.println("Player " + player.getNamedItem("id").getNodeValue() + " -> " +
+                                player.getNamedItem("name").getNodeValue() + (draw ? "" : " winner") +" as '" +
+                                player.getNamedItem("symbol").getNodeValue() + "'!");
+                    }
+                }
             }
+        } catch (XMLMissingException e){
+            e.printStackTrace();
         }
     }
 
@@ -301,5 +318,10 @@ class IllegalPositionException extends Exception{
 class IllegalValuesException extends Exception{
     public IllegalValuesException(){
         super("The set values go beyond the boundaries of the playing field. 0 < values < 4");
+    }
+}
+class XMLMissingException extends Exception{
+    public XMLMissingException() {
+        super("XML file is missing");
     }
 }

@@ -2,8 +2,8 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-//        final String GREETING = "This is a game of tic-tac-toe. Please enter players names:";
-//
+        final String GREETING = "This is a game of tic-tac-toe. Please enter players names:";
+
 //        Scanner scanner = new Scanner(System.in);
 //
 //        System.out.println(GREETING);
@@ -13,9 +13,10 @@ public class Main {
 //        String player2 = scanner.nextLine();
 //
 //        Game game1 = new Game(player1,player2);
-//        game1.startGame();
+//        game1.playGame();
 
         Game game = new Game();
-        game.readFromXML();
+        game.playGame();
+        game.playFromXML();
     }
 }

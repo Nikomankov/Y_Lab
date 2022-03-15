@@ -1,5 +1,7 @@
 import org.w3c.dom.*;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -18,8 +20,8 @@ public class Game {
             "\n3. It is forbidden to put your symbol on top of the opponent's symbol." +
             "\n4. The winner is the one who first builds a horizontal, vertical or " +
             "\n   diagonal line of 3 of his symbols.";
-    private String player1;
-    private String player2;
+    private String player1 = "Player 1";
+    private String player2 = "Player 2";
     private char[][] gameField;
 
     private enum WinStatus {FIRST, SECOND, DRAW}
@@ -27,10 +29,66 @@ public class Game {
 
     private File xml;
     private Document docToWrite;
-    private Document docToRead;
+//    private Document docToRead;
 
     public Game(){
+        System.out.println(GAME_RULES);
         this.gameField = new char[3][3];
+        createField();
+        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
+
+        //Rating
+        this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
+        try {
+            rating.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //XML DOM record
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder;
+        try {
+            builder = factory.newDocumentBuilder();
+            this.docToWrite = builder.newDocument();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public Game(String player1, String player2){
+        this.player1 = player1;
+        this.player2 = player2;
+        System.out.println(GAME_RULES);
+        this.gameField = new char[3][3];
+        createField();
+        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
+
+        //Rating
+        this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
+        try {
+            rating.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //XML DOM record
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder;
+        try {
+            builder = factory.newDocumentBuilder();
+            this.docToWrite = builder.newDocument();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //DOM reader
+    /*
+    public Game(){
+        this.gameField = new char[3][3];
+        createField();
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
@@ -48,40 +106,10 @@ public class Game {
         } catch (XMLMissingException e){
             e.printStackTrace();
         }
-
-
-        createField();
     }
+    */
 
-    public Game(String player1, String player2){
-        this.player1 = player1;
-        this.player2 = player2;
-        this.gameField = new char[3][3];
-        this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
-        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
-
-        //Rating
-        try {
-            rating.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //XML DOM
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-        try {
-            builder = factory.newDocumentBuilder();
-            this.docToWrite = builder.newDocument();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        createField();
-        System.out.println(GAME_RULES);
-    }
-
-    public void createField(){
+    private void createField(){
         for(int i = 0; i < 3; i++){
             for(int j = 0; j < 3; j++){
                 this.gameField[i][j] = '-';
@@ -121,15 +149,30 @@ public class Game {
         return false;
     }
 
-    private boolean step(int player, int line, int column){
+    private void step(int player, int line, int column){
         switch (player) {
             case 1 -> gameField[line][column] = 'X';
             case 2 -> gameField[line][column] = '0';
         }
-        return true;
     }
 
-    public void startGame(){
+    private boolean lineСheck(int player, int line, int column){
+        char c = player == 1 ? 'X' : '0';
+        int diagCounter1 = 0;
+        int diagCounter2 = 0;
+        int horizontCounter = 0;
+        int verticalCounter = 0;
+
+        for(int i = 0; i < 3; i++){
+            diagCounter1 += gameField[i][i] == c ? 1 : 0;
+            diagCounter2 += gameField[i][2-i] == c ? 1 : 0;
+            horizontCounter += gameField[line][i] == c ? 1 : 0;
+            verticalCounter += gameField[i][column] == c ? 1 : 0;
+        }
+        return diagCounter1 == 3 | diagCounter2 == 3 | horizontCounter == 3 | verticalCounter == 3;
+    }
+
+    public void playGame(){
         Scanner scanner = new Scanner(System.in);
         int counter = 1;
         int line;
@@ -204,6 +247,8 @@ public class Game {
 
     }
 
+    //----------------------------------------------
+    //Rating to txt
     private void ratingEntry(WinStatus winStatus){
         try {
             FileWriter fileWriter = new FileWriter(rating,true);
@@ -222,24 +267,11 @@ public class Game {
         }
     }
 
-    private boolean lineСheck(int player, int line, int column){
-        char c = player == 1 ? 'X' : '0';
-        int diagCounter1 = 0;
-        int diagCounter2 = 0;
-        int horizontCounter = 0;
-        int verticalCounter = 0;
 
-        for(int i = 0; i < 3; i++){
-            diagCounter1 += gameField[i][i] == c ? 1 : 0;
-            diagCounter2 += gameField[i][2-i] == c ? 1 : 0;
-            horizontCounter += gameField[line][i] == c ? 1 : 0;
-            verticalCounter += gameField[i][column] == c ? 1 : 0;
-        }
-        return diagCounter1 == 3 | diagCounter2 == 3 | horizontCounter == 3 | verticalCounter == 3;
-    }
 
     //----------------------------------------------
-    //XML
+    //Gameplay to XML methods
+    //DOM recorder
     private Element playerToXml(int playerIndex){
         Element player = docToWrite.createElement("Player");
         player.setAttribute("id",String.valueOf(playerIndex));
@@ -268,7 +300,10 @@ public class Game {
         return gameResult;
     }
 
+    //Gameplay from XML
 
+    //DOM reader
+    /*
     public void readFromXML(){
         try{
             if(!xml.exists()){
@@ -306,6 +341,85 @@ public class Game {
             e.printStackTrace();
         }
     }
+     */
+
+    //SAX reader
+    public void playFromXML(){
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        try {
+            SAXParser parser = factory.newSAXParser();
+            XMLHandler handler = new XMLHandler();
+            parser.parse(xml, handler);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void playFromXML(String path){
+        this.xml = new File(path);
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        try {
+            SAXParser parser = factory.newSAXParser();
+            XMLHandler handler = new XMLHandler();
+            parser.parse(xml, handler);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class XMLHandler extends DefaultHandler {
+        private int playerID, line, column = -1;
+        private String lastElementName, name1 , name2;
+        private boolean result, draw  = false;
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes){
+            lastElementName = qName;
+            switch (qName){
+                case "step" ->
+                    playerID = Integer.parseInt(attributes.getValue("playerId"));
+                case "GameResult" ->
+                    result = true;
+                case "Player" ->{
+                    if(result){
+                        System.out.println("Player " + attributes.getValue("id") + " -> " +
+                                attributes.getValue("name") + (draw ? "" : " winner") + " as '" + attributes.getValue("symbol") + "'!");
+                    } else {
+                        if(name1 == null){
+                            name1 = attributes.getValue("name");
+                        } else name2 = attributes.getValue("name");
+                    }
+                }
+            }
+        }
+        @Override
+        public void characters(char[] ch, int start, int lenght){
+            String information = new String(ch, start, lenght);
+            information = information.replaceAll("\n", "").trim();
+            if(!information.isEmpty()){
+                switch (lastElementName){
+                    case "step" -> {
+                        line = Character.getNumericValue(information.charAt(7)) - 1;
+                        column = Character.getNumericValue(information.charAt(19)) - 1;
+                    }
+                    case "GameResult" -> {
+                        System.out.println(information); //draw
+                        draw = information.equals("Draw!");
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            if((line != -1) & (column != -1)){
+                step(playerID,line,column);
+                printField();
+                System.out.println();
+                line = -1;
+                column = -1;
+            }
+        }
+    }
 
 }
 
@@ -325,3 +439,4 @@ class XMLMissingException extends Exception{
         super("XML file is missing");
     }
 }
+

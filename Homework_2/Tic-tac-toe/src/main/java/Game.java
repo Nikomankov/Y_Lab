@@ -256,7 +256,7 @@ public class Game {
                 fileWriter.append("Rating list:\n");
             }
             switch (winStatus){
-                case DRAW -> fileWriter.append(player1 + ", " + player2 + " draw!\n");
+                case DRAW -> fileWriter.append(player1 + " & " + player2 + " draw!\n");
                 case FIRST -> fileWriter.append(player1 + " winner!\n");
                 case SECOND -> fileWriter.append(player2 + " winner!\n");
             }
@@ -392,8 +392,8 @@ public class Game {
             }
         }
         @Override
-        public void characters(char[] ch, int start, int lenght){
-            String information = new String(ch, start, lenght);
+        public void characters(char[] ch, int start, int length){
+            String information = new String(ch, start, length);
             information = information.replaceAll("\n", "").trim();
             if(!information.isEmpty()){
                 switch (lastElementName){

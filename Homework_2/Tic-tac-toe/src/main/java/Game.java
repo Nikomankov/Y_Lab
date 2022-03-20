@@ -1,8 +1,8 @@
-import Parser.XMLParser;
+import Parser.ParserJSON;
+import Parser.ParserXML;
 import Recorder.XMLRecorder;
 import org.w3c.dom.*;
 
-import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -30,11 +30,14 @@ public class Game{
     private XMLRecorder xmlRecorder;
     private Document docToWrite;
 
+    private File json;
+
     public Game(){
         System.out.println(GAME_RULES);
         this.gameField = new char[3][3];
         createField();
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
+        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay.json");
 
         //Rating
         this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
@@ -55,6 +58,7 @@ public class Game{
         this.gameField = new char[3][3];
         createField();
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
+        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay.json");
 
         //Rating
         this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
@@ -220,14 +224,20 @@ public class Game{
     }
 
     //----------------------------------------------
-    //Gameplay from XML
+    //JSON readers
+    public void readFromJSON(){
+        ParserJSON parser = new ParserJSON(json);
+
+    }
+
+    //XML readers
     //DOM reader
      public void readFromXML(){
         try {
             if(!xml.exists()){
                 throw new XMLMissingException();
             } else {
-                XMLParser parser = new XMLParser(xml);
+                ParserXML parser = new ParserXML(xml);
                 int[][] stepsArray = parser.getSteps();
                 for(int i = 0; i < stepsArray[0].length; i++){
                     step(i%2 == 1 ? 1 : 2, stepsArray[0][i], stepsArray[1][i]);

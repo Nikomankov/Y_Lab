@@ -12,19 +12,19 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 
-public class XMLParser  implements Parser{
+public class ParserXML implements Parser{
     private Document document;
 
-    public XMLParser(File file){
+    public ParserXML(File file){
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         try {
             builder = factory.newDocumentBuilder();
             this.document = builder.parse(file);
+            document.getDocumentElement().normalize();
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
-        document.getDocumentElement().normalize();
     }
 
     @Override

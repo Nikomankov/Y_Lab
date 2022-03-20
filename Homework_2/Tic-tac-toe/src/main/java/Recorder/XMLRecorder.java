@@ -7,15 +7,16 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-public class XMLRecorder implements Recorder{
+public class XMLRecorder implements Recorder {
     private Document document;
     private String player1;
     private String player2;
     private Element gameplay;
     private Element game;
 
+
     public XMLRecorder(String player1, String player2){
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         try {
             builder = factory.newDocumentBuilder();

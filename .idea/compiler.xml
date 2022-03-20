@@ -17,7 +17,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Tic-tac-toe" options="--add-exports java.base/java=ALL-UNNAMED" />
+      <module name="Tic-tac-toe" options="" />
     </option>
   </component>
 </project>

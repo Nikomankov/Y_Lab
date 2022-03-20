@@ -1,4 +1,5 @@
 package Recorder;
+import Game.*;
 
 public interface Recorder {
 

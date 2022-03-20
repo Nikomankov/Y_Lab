@@ -1,6 +1,8 @@
-import Parser.ParserJSON;
-import Parser.ParserXML;
-import Recorder.XMLRecorder;
+package Game;
+
+import Parser.*;
+import Recorder.*;
+import Exceptions.*;
 import org.w3c.dom.*;
 
 import javax.xml.transform.*;
@@ -12,7 +14,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class Game{
-    private final String GAME_RULES = "Game rules:" +
+    private final String GAME_RULES = "Game.Game rules:" +
             "\n1. The player with \"X\" always goes first" +
             "\n2. To go, you must enter the coordinates where you want to go in the " +
             "\n   format [line number, column number]." +
@@ -226,8 +228,22 @@ public class Game{
     //----------------------------------------------
     //JSON readers
     public void readFromJSON(){
-        ParserJSON parser = new ParserJSON(json);
-
+        try {
+            if(!json.exists()){
+                throw new JSONMissingException();
+            } else {
+                ParserJSON parser = new ParserJSON(json);
+                int[][] stepsArray = parser.getSteps();
+                for(int i = 0; i < stepsArray[0].length; i++){
+                    step(i%2 == 1 ? 1 : 2, stepsArray[0][i], stepsArray[1][i]);
+                    printField();
+                    System.out.println();
+                }
+                System.out.println(parser.getResults());
+            }
+        } catch (JSONMissingException e){
+            e.printStackTrace();
+        }
     }
 
     //XML readers

@@ -1,81 +1,61 @@
 {
-	"Gameplay": {
-		"Player": [
-			{
-				"_id": "1",
-				"_name": "Igor",
-				"_symbol": "X"
-			},
-			{
-				"_id": "2",
-				"_name": "Anna",
-				"_symbol": "O"
-			}
-		],
-		"Game": {
-			"Step": [
-				{
-					"_num": "1",
-					"_playerId": "1",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "2",
-					"_playerId": "2",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "3",
-					"_playerId": "1",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "4",
-					"_playerId": "2",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "5",
-					"_playerId": "1",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "6",
-					"_playerId": "2",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "7",
-					"_playerId": "1",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "8",
-					"_playerId": "2",
-					"_line": "0",
-					"_column": "0"
-				},
-				{
-					"_num": "9",
-					"_playerId": "1",
-					"_line": "0",
-					"_column": "0"
-				}
-			]
-		},
-		"GameResult": {
-			"Player": {
-				"_id": "1",
-				"_name": "Igor",
-				"_symbol": "X"
-			}
-		}
-	}
+  "Gameplay": [
+    {
+      "Players": [
+        {
+          "id": "1",
+          "name": "Momo",
+          "symbol": "X"
+        },
+        {
+          "id": "2",
+          "name": "Homer",
+          "symbol": "0"
+        }
+      ]
+    },
+    {
+      "Steps": [
+        {
+          "num": "1",
+          "playerId": "1",
+          "line" : "1",
+          "column": "1"
+        },
+        {
+          "num": "2",
+          "playerId": "2",
+          "line" : "1",
+          "column": "2"
+        },
+        {
+          "num": "3",
+          "playerId": "1",
+          "line" : "2",
+          "column": "1"
+        },
+        {
+          "num": "4",
+          "playerId": "2",
+          "line" : "2",
+          "column": "2"
+        },
+        {
+          "num": "5",
+          "playerId": "1",
+          "line" : "3",
+          "column": "1"
+        }
+      ]
+    },
+    {
+      "GameResult": [
+        {
+          "id": "1",
+          "name": "Momo",
+          "symbol": "X"
+        }
+      ]
+    }
+  ]
 }

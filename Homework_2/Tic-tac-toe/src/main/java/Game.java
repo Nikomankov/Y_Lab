@@ -1,7 +1,6 @@
+import Parser.XMLParser;
+import Recorder.XMLRecorder;
 import org.w3c.dom.*;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -12,7 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class Game {
+public class Game{
     private final String GAME_RULES = "Game rules:" +
             "\n1. The player with \"X\" always goes first" +
             "\n2. To go, you must enter the coordinates where you want to go in the " +
@@ -24,12 +23,12 @@ public class Game {
     private String player2 = "Player 2";
     private char[][] gameField;
 
-    private enum WinStatus {FIRST, SECOND, DRAW}
+    public enum WinStatus {FIRST, SECOND, DRAW}
     private File rating;
 
     private File xml;
+    private XMLRecorder xmlRecorder;
     private Document docToWrite;
-//    private Document docToRead;
 
     public Game(){
         System.out.println(GAME_RULES);
@@ -46,21 +45,13 @@ public class Game {
         }
 
         //XML DOM record
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-        try {
-            builder = factory.newDocumentBuilder();
-            this.docToWrite = builder.newDocument();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
+        this.xmlRecorder = new XMLRecorder(player1, player2);
     }
 
     public Game(String player1, String player2){
+        System.out.println(GAME_RULES);
         this.player1 = player1;
         this.player2 = player2;
-        System.out.println(GAME_RULES);
         this.gameField = new char[3][3];
         createField();
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
@@ -74,40 +65,8 @@ public class Game {
         }
 
         //XML DOM record
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-        try {
-            builder = factory.newDocumentBuilder();
-            this.docToWrite = builder.newDocument();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+        this.xmlRecorder = new XMLRecorder(player1, player2);
     }
-
-    //DOM reader
-    /*
-    public Game(){
-        this.gameField = new char[3][3];
-        createField();
-        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder;
-        try{
-            if(!xml.exists()){
-                throw new XMLMissingException();
-            } else {
-                try {
-                    builder = factory.newDocumentBuilder();
-                    this.docToRead = builder.parse(xml);
-                } catch (ParserConfigurationException | IOException | SAXException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (XMLMissingException e){
-            e.printStackTrace();
-        }
-    }
-    */
 
     private void createField(){
         for(int i = 0; i < 3; i++){
@@ -149,7 +108,7 @@ public class Game {
         return false;
     }
 
-    private void step(int player, int line, int column){
+    public void step(int player, int line, int column){
         switch (player) {
             case 1 -> gameField[line][column] = 'X';
             case 2 -> gameField[line][column] = '0';
@@ -178,12 +137,6 @@ public class Game {
         int line;
         int column;
         boolean win = false;
-        Element gameplay = docToWrite.createElement("Gameplay");
-        docToWrite.appendChild(gameplay);
-        gameplay.appendChild(playerToXml(1));
-        gameplay.appendChild(playerToXml(2));
-        Element game = docToWrite.createElement("Game");
-        gameplay.appendChild(game);
         while(counter < 10 & !win) {
             int playerIndex = counter % 2 == 1 ? 1 : 2;
             printField();
@@ -202,11 +155,11 @@ public class Game {
             switch (playerIndex) {
                 case 1 -> {
                     step(1, line, column);
-                    game.appendChild(stepToXML(counter, 1, line + 1, column + 1));
+                    xmlRecorder.stepRecord(counter,1,line+1,column+1);
                 }
                 case 2 -> {
                     step(2, line, column);
-                    game.appendChild(stepToXML(counter, 2, line + 1, column + 1));
+                    xmlRecorder.stepRecord(counter,2,line+1,column+1);
                 }
             }
 
@@ -217,20 +170,19 @@ public class Game {
                     case 1 -> {
                         System.out.println("Congratulation! " + player1 + " WIN!");
                         ratingEntry(WinStatus.FIRST);
-                        gameplay.appendChild(winStatusToXML(WinStatus.FIRST));
+                        xmlRecorder.resultRecord(WinStatus.FIRST);
                     }
                     case 2 -> {
                         System.out.println("Congratulation! " + player2 + " WIN!");
                         ratingEntry(WinStatus.SECOND);
-                        gameplay.appendChild(winStatusToXML(WinStatus.SECOND));
-                    }
+                        xmlRecorder.resultRecord(WinStatus.SECOND);                    }
                 }
             }
             counter++;
             if(counter == 10 & !win){
                 System.out.println("Draw!");
                 ratingEntry(WinStatus.DRAW);
-                gameplay.appendChild(winStatusToXML(WinStatus.DRAW));
+                xmlRecorder.resultRecord(WinStatus.DRAW);
             }
         }
 
@@ -267,83 +219,32 @@ public class Game {
         }
     }
 
-
-
     //----------------------------------------------
-    //Gameplay to XML methods
-    //DOM recorder
-    private Element playerToXml(int playerIndex){
-        Element player = docToWrite.createElement("Player");
-        player.setAttribute("id",String.valueOf(playerIndex));
-        player.setAttribute("name", playerIndex == 1 ? player1 : player2);
-        player.setAttribute("symbol", playerIndex == 1 ? "X" : "0");
-        return player;
-    }
-    private Element stepToXML(int counter, int player, int line, int column){
-        Element step = docToWrite.createElement("step");
-        step.setAttribute("num", String.valueOf(counter));
-        step.setAttribute("playerId", String.valueOf(player));
-        step.setTextContent("line = " + line + ", column = " + column);
-        return step;
-    }
-    private Element winStatusToXML(WinStatus winStatus){
-        Element gameResult = docToWrite.createElement("GameResult");
-        switch (winStatus){
-            case DRAW -> {
-                gameResult.setTextContent("Draw!");
-                gameResult.appendChild(playerToXml(1));
-                gameResult.appendChild(playerToXml(2));
-            }
-            case FIRST -> gameResult.appendChild(playerToXml(1));
-            case SECOND -> gameResult.appendChild(playerToXml(2));
-        }
-        return gameResult;
-    }
-
     //Gameplay from XML
-
     //DOM reader
-    /*
-    public void readFromXML(){
-        try{
+     public void readFromXML(){
+        try {
             if(!xml.exists()){
                 throw new XMLMissingException();
             } else {
-                int line;
-                int column;
-                docToRead.getDocumentElement().normalize();
-                NodeList stepNodes = docToRead.getElementsByTagName("step");
-                for(int i = 0; i < stepNodes.getLength(); i++){
-                    String step = stepNodes.item(i).getTextContent();
-                    line = Character.getNumericValue(step.charAt(7)) - 1;
-                    column = Character.getNumericValue(step.charAt(19)) - 1;
-                    step(i%2 == 1 ? 1 : 2, line, column);
+                XMLParser parser = new XMLParser(xml);
+                int[][] stepsArray = parser.getSteps();
+                for(int i = 0; i < stepsArray[0].length; i++){
+                    step(i%2 == 1 ? 1 : 2, stepsArray[0][i], stepsArray[1][i]);
                     printField();
                     System.out.println();
                 }
-                Node gameResult = docToRead.getElementsByTagName("GameResult").item(0);
-                boolean draw = gameResult.getTextContent().trim().equals("Draw!");
-                if(draw) {
-                    System.out.println("Draw!");
-                }
-                NodeList winners = gameResult.getChildNodes();
-                for(int i = 0; i < winners.getLength(); i++){
-                    NamedNodeMap player;
-                    if(winners.item(i).getNodeName().equals("Player")){
-                        player = winners.item(i).getAttributes();
-                        System.out.println("Player " + player.getNamedItem("id").getNodeValue() + " -> " +
-                                player.getNamedItem("name").getNodeValue() + (draw ? "" : " winner") +" as '" +
-                                player.getNamedItem("symbol").getNodeValue() + "'!");
-                    }
-                }
+                System.out.println(parser.getResults());
             }
         } catch (XMLMissingException e){
             e.printStackTrace();
         }
-    }
-     */
+
+     }
+
 
     //SAX reader
+    /*
     public void playFromXML(){
         SAXParserFactory factory = SAXParserFactory.newInstance();
         try {
@@ -420,23 +321,8 @@ public class Game {
             }
         }
     }
-
+    */
 }
 
-//my exceptions
-class IllegalPositionException extends Exception{
-    public IllegalPositionException(){
-        super("This position is taken, please select another");
-    }
-}
-class IllegalValuesException extends Exception{
-    public IllegalValuesException(){
-        super("The set values go beyond the boundaries of the playing field. 0 < values < 4");
-    }
-}
-class XMLMissingException extends Exception{
-    public XMLMissingException() {
-        super("XML file is missing");
-    }
-}
+
 

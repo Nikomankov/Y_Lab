@@ -16,7 +16,24 @@ public class Main {
 //        game1.playGame();
 
         Game game = new Game();
-        game.playGame();
-        game.playFromXML();
+//        game.playGame();
+        game.readFromXML();
+    }
+}
+
+//my exceptions
+class IllegalPositionException extends Exception{
+    public IllegalPositionException(){
+        super("This position is taken, please select another");
+    }
+}
+class IllegalValuesException extends Exception{
+    public IllegalValuesException(){
+        super("The set values go beyond the boundaries of the playing field. 0 < values < 4");
+    }
+}
+class XMLMissingException extends Exception{
+    public XMLMissingException() {
+        super("XML file is missing");
     }
 }

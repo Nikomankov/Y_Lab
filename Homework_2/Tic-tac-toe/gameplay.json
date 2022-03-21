@@ -49,13 +49,12 @@
       ]
     },
     {
-      "GameResult": [
+      "GameResult":
         {
           "id": "1",
           "name": "Momo",
           "symbol": "X"
         }
-      ]
     }
   ]
 }

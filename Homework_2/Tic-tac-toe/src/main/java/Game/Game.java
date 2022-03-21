@@ -29,17 +29,18 @@ public class Game{
     private File rating;
 
     private File xml;
-    private XMLRecorder xmlRecorder;
-    private Document docToWrite;
-
     private File json;
+    private RecorderXML recorderXML;
+    private RecorderJSON recorderJSON;
 
     public Game(){
         System.out.println(GAME_RULES);
         this.gameField = new char[3][3];
         createField();
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
-        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay.json");
+        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay1.json");
+        System.out.println("XML = " + xml.getAbsolutePath());
+        System.out.println("XML = " + xml.getName());
 
         //Rating
         this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
@@ -50,7 +51,9 @@ public class Game{
         }
 
         //XML DOM record
-        this.xmlRecorder = new XMLRecorder(player1, player2);
+        this.recorderXML = new RecorderXML(player1, player2,xml);
+        //JSON.simple record
+        this.recorderJSON = new RecorderJSON(player1,player2,"Homework_2\\Tic-tac-toe\\gameplay1.json");
     }
 
     public Game(String player1, String player2){
@@ -60,7 +63,7 @@ public class Game{
         this.gameField = new char[3][3];
         createField();
         this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
-        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay.json");
+        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay1.json");
 
         //Rating
         this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
@@ -71,7 +74,9 @@ public class Game{
         }
 
         //XML DOM record
-        this.xmlRecorder = new XMLRecorder(player1, player2);
+        this.recorderXML = new RecorderXML(player1, player2, xml);
+        //JSON.simple record
+        this.recorderJSON = new RecorderJSON(player1,player2,"Homework_2\\Tic-tac-toe\\gameplay1.json");
     }
 
     private void createField(){
@@ -161,11 +166,13 @@ public class Game{
             switch (playerIndex) {
                 case 1 -> {
                     step(1, line, column);
-                    xmlRecorder.stepRecord(counter,1,line+1,column+1);
+                    recorderXML.stepRecord(counter,1,line+1,column+1);
+                    recorderJSON.stepRecord(counter,1,line+1,column+1);
                 }
                 case 2 -> {
                     step(2, line, column);
-                    xmlRecorder.stepRecord(counter,2,line+1,column+1);
+                    recorderXML.stepRecord(counter,2,line+1,column+1);
+                    recorderJSON.stepRecord(counter,2,line+1,column+1);
                 }
             }
 
@@ -176,33 +183,27 @@ public class Game{
                     case 1 -> {
                         System.out.println("Congratulation! " + player1 + " WIN!");
                         ratingEntry(WinStatus.FIRST);
-                        xmlRecorder.resultRecord(WinStatus.FIRST);
+                        recorderXML.resultRecord(WinStatus.FIRST);
+                        recorderJSON.resultRecord(WinStatus.FIRST);
                     }
                     case 2 -> {
                         System.out.println("Congratulation! " + player2 + " WIN!");
                         ratingEntry(WinStatus.SECOND);
-                        xmlRecorder.resultRecord(WinStatus.SECOND);                    }
+                        recorderXML.resultRecord(WinStatus.SECOND);
+                        recorderJSON.resultRecord(WinStatus.SECOND);
+                    }
                 }
             }
             counter++;
             if(counter == 10 & !win){
                 System.out.println("Draw!");
                 ratingEntry(WinStatus.DRAW);
-                xmlRecorder.resultRecord(WinStatus.DRAW);
+                recorderXML.resultRecord(WinStatus.DRAW);
+                recorderJSON.resultRecord(WinStatus.DRAW);
             }
         }
-
-        try {
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            DOMSource source = new DOMSource(docToWrite);
-            StreamResult file = new StreamResult(xml);
-            transformer.transform(source, file);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-
+        recorderXML.closeRecord();
+        recorderJSON.closeRecord();
     }
 
     //----------------------------------------------

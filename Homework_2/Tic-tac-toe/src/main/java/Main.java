@@ -2,8 +2,6 @@ import Game.*;
 
 public class Main {
     public static void main(String[] args) {
-
-        int i = 0;
         final String GREETING = "This is a game of tic-tac-toe. Please enter players names:";
 
 //        Scanner scanner = new Scanner(System.in);
@@ -18,8 +16,8 @@ public class Main {
 //        game1.playGame();
 
         Game game = new Game();
-//        game.playGame();
-        game.readFromJSON();
+        game.playGame();
+//        game.readFromJSON();
     }
 }
 

@@ -20,7 +20,7 @@ public class ParserXML implements Parser{
         DocumentBuilder builder;
         try {
             builder = factory.newDocumentBuilder();
-            this.document = builder.parse(file);
+            document = builder.parse(file);
             document.getDocumentElement().normalize();
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();

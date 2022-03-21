@@ -16,7 +16,8 @@ public class Main {
 //        game1.playGame();
 
         Game game = new Game();
-        game.playGame();
+        game.readFromJSON();
+//        game.playGame();
 //        game.readFromJSON();
     }
 }

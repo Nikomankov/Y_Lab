@@ -3,6 +3,8 @@ package Recorder;
 import Game.Game;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,7 +12,7 @@ import java.nio.file.Paths;
 
 public class RecorderJSON implements Recorder {
     private JSONObject root;
-    private JSONArray gameplayArr;
+    private JSONObject gameplay;
     private JSONArray playersArr;
     private JSONArray stepsArr;
     private JSONObject result;
@@ -22,47 +24,48 @@ public class RecorderJSON implements Recorder {
         this.player1 = player1;
         this.player2 = player2;
         this.filename = filename;
-        this.root = new JSONObject();
-        this.gameplayArr = new JSONArray();
-        this.playersArr = new JSONArray();
+        root = new JSONObject();
+        gameplay = new JSONObject();
+        playersArr = new JSONArray();
         playersArr.add(playerConvert(1));
         playersArr.add(playerConvert(2));
-        this.stepsArr = new JSONArray();
-        this.result = new JSONObject();
+        stepsArr = new JSONArray();
     }
 
     @Override
     public void stepRecord(int counter, int playerId, int line, int column) {
         JSONObject step = new JSONObject();
-        step.put("num", counter);
-        step.put("playerId", playerId);
-        step.put("line", line);
-        step.put("column", column);
+        step.put("_num", counter);
+        step.put("_playerId", playerId);
+        step.put("_line", line);
+        step.put("_column", column);
         stepsArr.add(step);
     }
 
     @Override
     public void resultRecord(Game.WinStatus winStatus) {
-
+        result = new JSONObject();
         switch (winStatus){
             case DRAW ->{
-                resultObj.put("GameResult", "Draw");
+                JSONParser parser = new JSONParser();
+                try {
+                    result = (JSONObject) parser.parse("Draw!");
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
-            case FIRST -> {
-                result.put("Player", playerConvert(1));
-                resultObj.put("GameResult", result);
-            }
-            case SECOND -> {
-                result.put("Player", playerConvert(2));
-                resultObj.put("GameResult", result);
-            }
+            case FIRST -> result.put("Player",playerConvert(1));
+            case SECOND -> result.put("Player",playerConvert(2));
         }
     }
     @Override
     public void closeRecord(){
-        playersArr.
-        gameplay.put()
-        root.put("Gameplay", gameplayArr);
+        JSONObject steps = new JSONObject();
+        steps.put("Step",stepsArr);
+        gameplay.put("Player",playersArr);
+        gameplay.put("Game",steps);
+        gameplay.put("GameResult",result);
+        root.put("Gameplay", gameplay);
         try {
             Files.write(Paths.get(filename), root.toJSONString().getBytes());
         } catch (IOException e) {

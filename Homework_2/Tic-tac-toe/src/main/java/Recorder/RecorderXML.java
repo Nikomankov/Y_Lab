@@ -35,11 +35,11 @@ public class RecorderXML implements Recorder {
         this.file = file;
         this.player1 = player1;
         this.player2 = player2;
-        this.gameplay = document.createElement("Gameplay");
+        gameplay = document.createElement("Gameplay");
         document.appendChild(gameplay);
         gameplay.appendChild(playerConvert(1));
         gameplay.appendChild(playerConvert(2));
-        this.game = document.createElement("Game");
+        game = document.createElement("Game");
         gameplay.appendChild(game);
     }
 
@@ -67,7 +67,7 @@ public class RecorderXML implements Recorder {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            DOMSource source = new DOMSource();
+            DOMSource source = new DOMSource(document);
             StreamResult streamRes = new StreamResult(file);
             transformer.transform(source, streamRes);
         } catch (TransformerException e) {

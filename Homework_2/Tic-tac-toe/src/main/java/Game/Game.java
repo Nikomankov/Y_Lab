@@ -1,13 +1,14 @@
 package Game;
 
-import Parser.*;
-import Recorder.*;
-import Exceptions.*;
-import org.w3c.dom.*;
+import Exceptions.IllegalPositionException;
+import Exceptions.IllegalValuesException;
+import Exceptions.JSONMissingException;
+import Exceptions.XMLMissingException;
+import Parser.ParserJSON;
+import Parser.ParserXML;
+import Recorder.RecorderJSON;
+import Recorder.RecorderXML;
 
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,12 +25,13 @@ public class Game{
     private String player1 = "Player 1";
     private String player2 = "Player 2";
     private char[][] gameField;
-
     public enum WinStatus {FIRST, SECOND, DRAW}
     private File rating;
-
     private File xml;
     private File json;
+    private String txtPath = "Homework_2\\Tic-tac-toe\\Rating.txt";
+    private String xmlPath = "Homework_2\\Tic-tac-toe\\gameXML.xml";
+    private String jsonPath = "Homework_2\\Tic-tac-toe\\gameJSON.json";
     private RecorderXML recorderXML;
     private RecorderJSON recorderJSON;
 
@@ -37,13 +39,13 @@ public class Game{
         System.out.println(GAME_RULES);
         this.gameField = new char[3][3];
         createField();
-        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
-        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay1.json");
+        this.xml = new File(xmlPath);
+        this.json = new File(jsonPath);
         System.out.println("XML = " + xml.getAbsolutePath());
         System.out.println("XML = " + xml.getName());
 
         //Rating
-        this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
+        this.rating = new File(txtPath);
         try {
             rating.createNewFile();
         } catch (IOException e) {
@@ -53,7 +55,7 @@ public class Game{
         //XML DOM record
         this.recorderXML = new RecorderXML(player1, player2,xml);
         //JSON.simple record
-        this.recorderJSON = new RecorderJSON(player1,player2,"Homework_2\\Tic-tac-toe\\gameplay1.json");
+        this.recorderJSON = new RecorderJSON(player1,player2,jsonPath);
     }
 
     public Game(String player1, String player2){
@@ -62,11 +64,11 @@ public class Game{
         this.player2 = player2;
         this.gameField = new char[3][3];
         createField();
-        this.xml = new File("Homework_2\\Tic-tac-toe\\game.xml");
-        this.json = new File("Homework_2\\Tic-tac-toe\\gameplay1.json");
+        this.xml = new File(xmlPath);
+        this.json = new File(jsonPath);
 
         //Rating
-        this.rating = new File("Homework_2\\Tic-tac-toe\\Rating.txt");
+        this.rating = new File(txtPath);
         try {
             rating.createNewFile();
         } catch (IOException e) {
@@ -74,9 +76,9 @@ public class Game{
         }
 
         //XML DOM record
-        this.recorderXML = new RecorderXML(player1, player2, xml);
+        this.recorderXML = new RecorderXML(player1, player2,xml);
         //JSON.simple record
-        this.recorderJSON = new RecorderJSON(player1,player2,"Homework_2\\Tic-tac-toe\\gameplay1.json");
+        this.recorderJSON = new RecorderJSON(player1,player2,jsonPath);
     }
 
     private void createField(){
@@ -227,7 +229,7 @@ public class Game{
     }
 
     //----------------------------------------------
-    //JSON readers
+    //JSON simple readers
     public void readFromJSON(){
         try {
             if(!json.exists()){
@@ -247,8 +249,7 @@ public class Game{
         }
     }
 
-    //XML readers
-    //DOM reader
+    //XML DOM reader
      public void readFromXML(){
         try {
             if(!xml.exists()){
@@ -266,89 +267,7 @@ public class Game{
         } catch (XMLMissingException e){
             e.printStackTrace();
         }
-
      }
-
-
-    //SAX reader
-    /*
-    public void playFromXML(){
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        try {
-            SAXParser parser = factory.newSAXParser();
-            XMLHandler handler = new XMLHandler();
-            parser.parse(xml, handler);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void playFromXML(String path){
-        this.xml = new File(path);
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        try {
-            SAXParser parser = factory.newSAXParser();
-            XMLHandler handler = new XMLHandler();
-            parser.parse(xml, handler);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private class XMLHandler extends DefaultHandler {
-        private int playerID, line, column = -1;
-        private String lastElementName, name1 , name2;
-        private boolean result, draw  = false;
-        @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes){
-            lastElementName = qName;
-            switch (qName){
-                case "step" ->
-                    playerID = Integer.parseInt(attributes.getValue("playerId"));
-                case "GameResult" ->
-                    result = true;
-                case "Player" ->{
-                    if(result){
-                        System.out.println("Player " + attributes.getValue("id") + " -> " +
-                                attributes.getValue("name") + (draw ? "" : " winner") + " as '" + attributes.getValue("symbol") + "'!");
-                    } else {
-                        if(name1 == null){
-                            name1 = attributes.getValue("name");
-                        } else name2 = attributes.getValue("name");
-                    }
-                }
-            }
-        }
-        @Override
-        public void characters(char[] ch, int start, int length){
-            String information = new String(ch, start, length);
-            information = information.replaceAll("\n", "").trim();
-            if(!information.isEmpty()){
-                switch (lastElementName){
-                    case "step" -> {
-                        line = Character.getNumericValue(information.charAt(7)) - 1;
-                        column = Character.getNumericValue(information.charAt(19)) - 1;
-                    }
-                    case "GameResult" -> {
-                        System.out.println(information); //draw
-                        draw = information.equals("Draw!");
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qName) {
-            if((line != -1) & (column != -1)){
-                step(playerID,line,column);
-                printField();
-                System.out.println();
-                line = -1;
-                column = -1;
-            }
-        }
-    }
-    */
 }
 
 

@@ -1,8 +1,10 @@
 package Parser;
 
+import Game.Step;
+
 public interface Parser {
 
-    int[][] getSteps();
+    Step[] getSteps();
 
     String getResults();
 }

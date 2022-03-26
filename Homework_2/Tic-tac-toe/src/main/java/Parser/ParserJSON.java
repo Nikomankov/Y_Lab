@@ -1,5 +1,6 @@
 package Parser;
 
+import Game.Step;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -29,12 +30,14 @@ public class ParserJSON implements Parser{
     }
 
     @Override
-    public int[][] getSteps() {
-        int[][] stepsArray = new int[2][steps.size()];
+    public Step[] getSteps() {
+        Step[] stepsArray = new Step[steps.size()];
         for(int i = 0; i < steps.size(); i++){
             JSONObject step = (JSONObject) steps.get(i);
-            stepsArray[0][i] = Integer.parseInt(step.get("_line").toString()) - 1;
-            stepsArray[1][i] = Integer.parseInt(step.get("_column").toString()) - 1;
+            stepsArray[i] = new Step(i+1,
+                    (i % 2 == 1 ? 2 : 1),
+                    Integer.parseInt(step.get("_line").toString()),
+                    Integer.parseInt(step.get("_column").toString()));
         }
         return stepsArray;
     }
@@ -47,8 +50,8 @@ public class ParserJSON implements Parser{
         }
         JSONObject result = (JSONObject) gameplay.get("GameResult");
         JSONObject winner = (JSONObject) result.get("Player");
-        return ("Player " + winner.get("id") + " -> " +
-                winner.get("name") + " winner as '" +
-                winner.get("symbol") + "'!");
+        return ("Player " + winner.get("_id") + " -> " +
+                winner.get("_name") + " winner as '" +
+                winner.get("_symbol") + "'!");
     }
 }

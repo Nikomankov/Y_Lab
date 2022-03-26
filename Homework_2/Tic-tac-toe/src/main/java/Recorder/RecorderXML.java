@@ -17,13 +17,13 @@ import java.io.File;
 
 public class RecorderXML implements Recorder {
     private Document document;
-    private String player1;
-    private String player2;
+    private Player player1;
+    private Player player2;
     private Element gameplay;
     private Element game;
     private File file;
 
-    public RecorderXML(String player1, String player2, File file){
+    public RecorderXML(Player player1, Player player2, File file){
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         try {
@@ -37,27 +37,27 @@ public class RecorderXML implements Recorder {
         this.player2 = player2;
         gameplay = document.createElement("Gameplay");
         document.appendChild(gameplay);
-        gameplay.appendChild(playerConvert(1));
-        gameplay.appendChild(playerConvert(2));
+        gameplay.appendChild(playerConvert(player1));
+        gameplay.appendChild(playerConvert(player2));
         game = document.createElement("Game");
         gameplay.appendChild(game);
     }
 
     @Override
-    public void stepRecord(int counter, int playerId, int line, int column){
-        Element step = document.createElement("step");
-        step.setAttribute("num", String.valueOf(counter));
-        step.setAttribute("playerId", String.valueOf(playerId));
-        step.setTextContent("line = " + line + ", column = " + column);
-        game.appendChild(step);
+    public void stepRecord(Step step){
+        Element stepXML = document.createElement("step");
+        stepXML.setAttribute("num", String.valueOf(step.getNum()));
+        stepXML.setAttribute("playerId", String.valueOf(step.getId()));
+        stepXML.setTextContent("line = " + step.getLine() + ", column = " + step.getColumn());
+        game.appendChild(stepXML);
     }
     @Override
-    public void resultRecord(Game.WinStatus winStatus){
+    public void resultRecord(GameResult gameResult){
         Element result = document.createElement("GameResult");
-        switch (winStatus){
-            case DRAW -> result.setTextContent("Draw!");
-            case FIRST -> result.appendChild(playerConvert(1));
-            case SECOND -> result.appendChild(playerConvert(2));
+        if(gameResult.getWinStatus().equals(Game.WinStatus.DRAW)){
+            result.setTextContent("Draw!");
+        } else {
+            result.appendChild(playerConvert(gameResult.getWinner()));
         }
         gameplay.appendChild(result);
     }
@@ -75,11 +75,11 @@ public class RecorderXML implements Recorder {
         }
     }
 
-    private Element playerConvert(int playerId){
-        Element player = document.createElement("Player");
-        player.setAttribute("id",String.valueOf(playerId));
-        player.setAttribute("name", playerId == 1 ? player1 : player2);
-        player.setAttribute("symbol", playerId == 1 ? "X" : "0");
-        return player;
+    private Element playerConvert(Player player){
+        Element playerXML = document.createElement("Player");
+        playerXML.setAttribute("id", String.valueOf(player.getId()));
+        playerXML.setAttribute("name", player.getName());
+        playerXML.setAttribute("symbol", player.getSymbol());
+        return playerXML;
     }
 }

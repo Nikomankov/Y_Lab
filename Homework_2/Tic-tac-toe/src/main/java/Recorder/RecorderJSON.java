@@ -1,83 +1,73 @@
 package Recorder;
 
 import Game.Game;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import Game.GameResult;
+import Game.Player;
+import Game.Step;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class RecorderJSON implements Recorder {
-    private JSONObject root;
-    private JSONObject gameplay;
-    private JSONArray playersArr;
-    private JSONArray stepsArr;
-    private JSONObject result;
-    private String player1;
-    private String player2;
-    private String filename;
+public class RecorderJSON implements Recorder{
+    private Player player1;
+    private Player player2;
+    private File file;
+    private List<Player> players;
+    private List<Step> steps;
+    private Object result;
 
-    public RecorderJSON(String player1, String player2, String filename){
+    public RecorderJSON(Player player1, Player player2, File file){
         this.player1 = player1;
         this.player2 = player2;
-        this.filename = filename;
-        root = new JSONObject();
-        gameplay = new JSONObject();
-        playersArr = new JSONArray();
-        playersArr.add(playerConvert(1));
-        playersArr.add(playerConvert(2));
-        stepsArr = new JSONArray();
+        this.file = file;
+        players = new ArrayList<>();
+        players.add(this.player1);
+        players.add(this.player1);
+        steps = new ArrayList<>();
     }
 
     @Override
-    public void stepRecord(int counter, int playerId, int line, int column) {
-        JSONObject step = new JSONObject();
-        step.put("_num", counter);
-        step.put("_playerId", playerId);
-        step.put("_line", line);
-        step.put("_column", column);
-        stepsArr.add(step);
+    public void stepRecord(Step step) {
+        steps.add(step);
     }
 
     @Override
-    public void resultRecord(Game.WinStatus winStatus) {
-        result = new JSONObject();
-        switch (winStatus){
-            case DRAW ->{
-                JSONParser parser = new JSONParser();
-                try {
-                    result = (JSONObject) parser.parse("Draw!");
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-            case FIRST -> result.put("Player",playerConvert(1));
-            case SECOND -> result.put("Player",playerConvert(2));
+    public void resultRecord(GameResult gameResult) {
+        result = new HashMap<>();
+        HashMap<String,Player> player = new HashMap<>();
+        if(gameResult.getWinStatus().equals(Game.WinStatus.DRAW)){
+            result = gameResult.getResult();
+        } else {
+            player.put("Player", gameResult.getWinner());
+            result = player;
         }
     }
+
     @Override
-    public void closeRecord(){
-        JSONObject steps = new JSONObject();
-        steps.put("Step",stepsArr);
-        gameplay.put("Player",playersArr);
-        gameplay.put("Game",steps);
-        gameplay.put("GameResult",result);
-        root.put("Gameplay", gameplay);
+    public void closeRecord() {
+        HashMap<String,Map> root = new HashMap<>();
+        HashMap<String,Object> gameplay = new HashMap<>();
+        HashMap<String,List> game = new HashMap<>();
+        game.put("Step",steps);
+        gameplay.put("Player",players);
+        gameplay.put("Game",game);
+        gameplay.put("GameResult", result);
+        root.put("Gameplay",gameplay);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String json = null;
         try {
-            Files.write(Paths.get(filename), root.toJSONString().getBytes());
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file,root);
+            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+        System.out.println(json);
 
-    private JSONObject playerConvert(int playerId){
-        JSONObject player = new JSONObject();
-        player.put("id", 1);
-        player.put("name", (playerId == 1 ? player1 : player2));
-        player.put("symbol", (playerId == 1 ? "X" : "0"));
-        return player;
     }
 }

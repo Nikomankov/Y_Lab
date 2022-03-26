@@ -3,9 +3,9 @@ import Game.*;
 
 public interface Recorder {
 
-    void stepRecord(int counter, int id, int line, int column);
+    void stepRecord(Step step);
 
-    void resultRecord(Game.WinStatus winStatus);
+    void resultRecord(GameResult gameResult);
 
     void closeRecord();
 }

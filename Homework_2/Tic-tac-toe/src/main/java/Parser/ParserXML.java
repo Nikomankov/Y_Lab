@@ -1,5 +1,6 @@
 package Parser;
 
+import Game.Step;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -28,15 +29,14 @@ public class ParserXML implements Parser{
     }
 
     @Override
-    public int[][] getSteps(){
+    public Step[] getSteps(){
         NodeList stepNodes = document.getElementsByTagName("step");
-        int[][] stepsArray = new int[2][stepNodes.getLength()];
+        Step[] steps = new Step[stepNodes.getLength()];
         for(int i = 0; i < stepNodes.getLength(); i++){
             String step = stepNodes.item(i).getTextContent();
-            stepsArray[0][i] = Character.getNumericValue(step.charAt(7)) - 1;
-            stepsArray[1][i] = Character.getNumericValue(step.charAt(19)) - 1;
+            steps[i] = new Step(i+1,i % 2 == 1 ? 2 : 1,Character.getNumericValue(step.charAt(7)),Character.getNumericValue(step.charAt(19)));
         }
-        return stepsArray;
+        return steps;
     }
 
     @Override

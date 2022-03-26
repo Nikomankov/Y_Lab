@@ -22,9 +22,10 @@ public class Game{
             "\n3. It is forbidden to put your symbol on top of the opponent's symbol." +
             "\n4. The winner is the one who first builds a horizontal, vertical or " +
             "\n   diagonal line of 3 of his symbols.";
-    private String player1 = "Player 1";
-    private String player2 = "Player 2";
-    private char[][] gameField;
+    private Player player1 = new Player(1,"Player1","X");
+    private Player player2 = new Player(2,"Player2","0");
+    private GameResult gameResult;
+    private String[][] gameField;
     public enum WinStatus {FIRST, SECOND, DRAW}
     private File rating;
     private File xml;
@@ -37,54 +38,38 @@ public class Game{
 
     public Game(){
         System.out.println(GAME_RULES);
-        this.gameField = new char[3][3];
+        this.gameField = new String[3][3];
         createField();
-        this.xml = new File(xmlPath);
-        this.json = new File(jsonPath);
-        System.out.println("XML = " + xml.getAbsolutePath());
-        System.out.println("XML = " + xml.getName());
-
         //Rating
         this.rating = new File(txtPath);
-        try {
-            rating.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         //XML DOM record
+        this.xml = new File(xmlPath);
         this.recorderXML = new RecorderXML(player1, player2,xml);
-        //JSON.simple record
-        this.recorderJSON = new RecorderJSON(player1,player2,jsonPath);
+        //JSON Jackson record
+        this.json = new File(jsonPath);
+        this.recorderJSON = new RecorderJSON(player1,player2,json);
     }
 
     public Game(String player1, String player2){
         System.out.println(GAME_RULES);
-        this.player1 = player1;
-        this.player2 = player2;
-        this.gameField = new char[3][3];
+        this.player1 = new Player(1,player1,"X");
+        this.player2 = new Player(2,player2,"0");
+        this.gameField = new String[3][3];
         createField();
-        this.xml = new File(xmlPath);
-        this.json = new File(jsonPath);
-
         //Rating
         this.rating = new File(txtPath);
-        try {
-            rating.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         //XML DOM record
-        this.recorderXML = new RecorderXML(player1, player2,xml);
-        //JSON.simple record
-        this.recorderJSON = new RecorderJSON(player1,player2,jsonPath);
+        this.xml = new File(xmlPath);
+        this.recorderXML = new RecorderXML(this.player1, this.player2,xml);
+        //JSON Jackson record
+        this.json = new File(jsonPath);
+        this.recorderJSON = new RecorderJSON(this.player1, this.player2,json);
     }
 
     private void createField(){
         for(int i = 0; i < 3; i++){
             for(int j = 0; j < 3; j++){
-                this.gameField[i][j] = '-';
+                this.gameField[i][j] = "-";
             }
         }
     }
@@ -100,11 +85,13 @@ public class Game{
         }
     }
 
-    private boolean checkEnterMove(int line, int column){
+    private boolean checkEnterMove(Step step){
+        int line = step.getLine();
+        int column = step.getColumn();
         try{
             if(line > -1 & line < 3 & column > -1 & column < 3){
                 try {
-                    if(gameField[line][column] == '-'){
+                    if(gameField[line][column].equals("-")){
                         return true;
                     } else {
                         throw new IllegalPositionException();
@@ -121,25 +108,23 @@ public class Game{
         return false;
     }
 
-    public void step(int player, int line, int column){
-        switch (player) {
-            case 1 -> gameField[line][column] = 'X';
-            case 2 -> gameField[line][column] = '0';
-        }
+    public void step(Step step){
+        gameField[step.getLine()][step.getColumn()] =
+                step.getId() == 1 ? player1.getSymbol() : player2.getSymbol();
     }
 
-    private boolean lineСheck(int player, int line, int column){
-        char c = player == 1 ? 'X' : '0';
+    private boolean lineСheck(Step step){
+        String c = step.getId() == 1 ? player1.getSymbol() : player2.getSymbol();
         int diagCounter1 = 0;
         int diagCounter2 = 0;
         int horizontCounter = 0;
         int verticalCounter = 0;
 
         for(int i = 0; i < 3; i++){
-            diagCounter1 += gameField[i][i] == c ? 1 : 0;
-            diagCounter2 += gameField[i][2-i] == c ? 1 : 0;
-            horizontCounter += gameField[line][i] == c ? 1 : 0;
-            verticalCounter += gameField[i][column] == c ? 1 : 0;
+            diagCounter1 += gameField[i][i].equals(c) ? 1 : 0;
+            diagCounter2 += gameField[i][2-i].equals(c) ? 1 : 0;
+            horizontCounter += gameField[step.getLine()][i].equals(c) ? 1 : 0;
+            verticalCounter += gameField[i][step.getColumn()].equals(c) ? 1 : 0;
         }
         return diagCounter1 == 3 | diagCounter2 == 3 | horizontCounter == 3 | verticalCounter == 3;
     }
@@ -155,72 +140,52 @@ public class Game{
             printField();
 
             //player moves
-            System.out.print("player " + (playerIndex == 1 ? player1 : player2) +
+            System.out.print("player " + (playerIndex == 1 ? player1.getName() : player2.getName()) +
                     "\nEnter your move: line = ");
             line = scanner.nextInt() - 1;
             System.out.print("column = ");
             column = scanner.nextInt() - 1;
 
-            if (!checkEnterMove(line, column)) {
+            Step step = new Step(counter,playerIndex,line,column);
+            if (!checkEnterMove(step)) {
                 continue;
             }
-
-            switch (playerIndex) {
-                case 1 -> {
-                    step(1, line, column);
-                    recorderXML.stepRecord(counter,1,line+1,column+1);
-                    recorderJSON.stepRecord(counter,1,line+1,column+1);
-                }
-                case 2 -> {
-                    step(2, line, column);
-                    recorderXML.stepRecord(counter,2,line+1,column+1);
-                    recorderJSON.stepRecord(counter,2,line+1,column+1);
-                }
-            }
+            step(step);
+            recorderXML.stepRecord(step);
+            recorderJSON.stepRecord(step);
 
             //winner check
-            win = lineСheck(playerIndex, line, column);
+            win = lineСheck(step);
             if (win) {
                 switch (playerIndex) {
-                    case 1 -> {
-                        System.out.println("Congratulation! " + player1 + " WIN!");
-                        ratingEntry(WinStatus.FIRST);
-                        recorderXML.resultRecord(WinStatus.FIRST);
-                        recorderJSON.resultRecord(WinStatus.FIRST);
-                    }
-                    case 2 -> {
-                        System.out.println("Congratulation! " + player2 + " WIN!");
-                        ratingEntry(WinStatus.SECOND);
-                        recorderXML.resultRecord(WinStatus.SECOND);
-                        recorderJSON.resultRecord(WinStatus.SECOND);
-                    }
+                    case 1 -> this.gameResult = new GameResult(WinStatus.FIRST, player1);
+                    case 2 -> this.gameResult = new GameResult(WinStatus.SECOND, player2);
                 }
             }
             counter++;
             if(counter == 10 & !win){
-                System.out.println("Draw!");
-                ratingEntry(WinStatus.DRAW);
-                recorderXML.resultRecord(WinStatus.DRAW);
-                recorderJSON.resultRecord(WinStatus.DRAW);
+                this.gameResult = new GameResult(WinStatus.DRAW);
             }
         }
+        System.out.println(gameResult.getResult());
+        ratingEntry();
+        recorderXML.resultRecord(gameResult);
+        recorderJSON.resultRecord(gameResult);
+
         recorderXML.closeRecord();
         recorderJSON.closeRecord();
     }
 
     //----------------------------------------------
     //Rating to txt
-    private void ratingEntry(WinStatus winStatus){
+    private void ratingEntry(){
         try {
+            rating.createNewFile();
             FileWriter fileWriter = new FileWriter(rating,true);
             if(rating.length() == 0){
                 fileWriter.append("Rating list:\n");
             }
-            switch (winStatus){
-                case DRAW -> fileWriter.append(player1 + " & " + player2 + " draw!\n");
-                case FIRST -> fileWriter.append(player1 + " winner!\n");
-                case SECOND -> fileWriter.append(player2 + " winner!\n");
-            }
+            fileWriter.append(gameResult.getResult());
             fileWriter.flush();
             fileWriter.close();
         } catch (IOException e) {
@@ -236,9 +201,9 @@ public class Game{
                 throw new JSONMissingException();
             } else {
                 ParserJSON parser = new ParserJSON(json);
-                int[][] stepsArray = parser.getSteps();
-                for(int i = 0; i < stepsArray[0].length; i++){
-                    step(i%2 == 1 ? 1 : 2, stepsArray[0][i], stepsArray[1][i]);
+                Step[] stepsArray = parser.getSteps();
+                for(Step step : stepsArray){
+                    step(step);
                     printField();
                     System.out.println();
                 }
@@ -256,9 +221,9 @@ public class Game{
                 throw new XMLMissingException();
             } else {
                 ParserXML parser = new ParserXML(xml);
-                int[][] stepsArray = parser.getSteps();
-                for(int i = 0; i < stepsArray[0].length; i++){
-                    step(i%2 == 1 ? 1 : 2, stepsArray[0][i], stepsArray[1][i]);
+                Step[] stepsArray = parser.getSteps();
+                for(Step step : stepsArray){
+                    step(step);
                     printField();
                     System.out.println();
                 }

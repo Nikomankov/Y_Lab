@@ -1,41 +1,38 @@
+import Exceptions.IllegalValuesException;
 import Game.Game;
+import Game.Step;
 import junit.framework.TestCase;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.Before;
+import org.junit.Test;
 
 public class GameTest extends TestCase {
     String[][] gameField;
     Game game;
 
-    @BeforeEach
-    @Override
+    @Before
     public void setUp() throws Exception{
         game = new Game();
-
     }
 
     //CheckEnterMove test
-    @Test
-    @DisplayName("Out-of-field check")
-    void testOutOfField(){
-        assertThrows(Throwable.class, () -> .addCustomer(input)
+    @Test(expected = IllegalValuesException.class)
+    public void testStepOutOfLineMinus(){
+        Step step = new Step(1,1,-1,1);
+        game.checkEnterMove(step);
     }
-    public void testStep(){
-
+    @Test(expected = IllegalValuesException.class)
+    public void testStepOutOfLinePlus(){
+        Step step = new Step(1,1,3,1);
+        game.checkEnterMove(step);
     }
-    public void testlineСheck(){
-
+    @Test(expected = IllegalValuesException.class)
+    public void testStepOutOfColumnMinus(){
+        Step step = new Step(1,1,1,-1);
+        game.checkEnterMove(step);
     }
-    public void testRatingEntry(){
-
-    }
-    public void testReadFromJSON(){
-
-    }
-    public void testReadFromXML(){
-
+    @Test(expected = IllegalValuesException.class)
+    public void testStepOutOfColumnPlus(){
+        Step step = new Step(1,1,1,3);
+        game.checkEnterMove(step);
     }
 }

@@ -27,7 +27,7 @@ public class RecorderJSON implements Recorder{
         this.file = file;
         players = new ArrayList<>();
         players.add(this.player1);
-        players.add(this.player1);
+        players.add(this.player2);
         steps = new ArrayList<>();
     }
 
@@ -60,14 +60,10 @@ public class RecorderJSON implements Recorder{
         root.put("Gameplay",gameplay);
 
         ObjectMapper mapper = new ObjectMapper();
-        String json = null;
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(file,root);
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(json);
-
     }
 }

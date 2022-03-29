@@ -30,9 +30,9 @@ public class Game{
     private File rating;
     private File xml;
     private File json;
-    private String txtPath = "Homework_2\\Tic-tac-toe\\Rating.txt";
-    private String xmlPath = "Homework_2\\Tic-tac-toe\\gameXML.xml";
-    private String jsonPath = "Homework_2\\Tic-tac-toe\\gameJSON.json";
+    private String txtPath = "Rating.txt";
+    private String xmlPath = "gameXML.xml";
+    private String jsonPath = "gameJSON.json";
     private RecorderXML recorderXML;
     private RecorderJSON recorderJSON;
 
@@ -85,7 +85,7 @@ public class Game{
         }
     }
 
-    private boolean checkEnterMove(Step step){
+    public boolean checkEnterMove(Step step){
         int line = step.getLine();
         int column = step.getColumn();
         try{

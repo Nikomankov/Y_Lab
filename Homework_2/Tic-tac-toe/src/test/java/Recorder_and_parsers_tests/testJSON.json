@@ -1,0 +1,28 @@
+{
+  "Gameplay" : {
+    "Player" : [ {
+      "_id" : 1,
+      "_name" : "player1",
+      "_symbol" : "X"
+    }, {
+      "_id" : 2,
+      "_name" : "player2",
+      "_symbol" : "0"
+    } ],
+    "Game" : {
+      "Step" : [ {
+        "_num" : 1,
+        "_id" : 1,
+        "_line" : 2,
+        "_column" : 3
+      } ]
+    },
+    "GameResult" : {
+      "Player" : {
+        "_id" : 1,
+        "_name" : "player1",
+        "_symbol" : "X"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "Gameplay" : {
+    "Player" : [ {
+      "_id" : 1,
+      "_name" : "Player1",
+      "_symbol" : "X"
+    }, {
+      "_id" : 1,
+      "_name" : "Player1",
+      "_symbol" : "X"
+    } ],
+    "Game" : {
+      "Step" : [ {
+        "_num" : 1,
+        "_id" : 1,
+        "_line" : 0,
+        "_column" : 0
+      }, {
+        "_num" : 2,
+        "_id" : 2,
+        "_line" : 0,
+        "_column" : 1
+      }, {
+        "_num" : 3,
+        "_id" : 1,
+        "_line" : 1,
+        "_column" : 0
+      }, {
+        "_num" : 4,
+        "_id" : 2,
+        "_line" : 1,
+        "_column" : 1
+      }, {
+        "_num" : 5,
+        "_id" : 1,
+        "_line" : 2,
+        "_column" : 0
+      } ]
+    },
+    "GameResult" : {
+      "Player" : {
+        "_id" : 1,
+        "_name" : "Player1",
+        "_symbol" : "X"
+      }
+    }
+  }
+}
